@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
+    # Admin Panel
+    ADMIN_ENABLED: bool = True
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def is_production(self) -> bool:
