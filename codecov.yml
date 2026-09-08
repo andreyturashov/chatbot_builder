@@ -8,14 +8,15 @@ coverage:
   status:
     project:
       default:
-        target: auto
-        threshold: 1%
+        target: 100%
+        threshold: 0%
     patch:
       default:
-        target: auto
-        threshold: 1%
+        target: 100%
+        threshold: 0%
 
 comment:
-  layout: "reach,diff,flags,files"
+  layout: "diff, flags, files"
   behavior: default
   require_changes: false
+  show_critical_paths_only: true
