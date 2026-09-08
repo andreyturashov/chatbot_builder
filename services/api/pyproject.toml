@@ -17,11 +17,13 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "aiosqlite>=0.22.1",
     "httpx>=0.28.1",
     "mypy>=1.15.0",
     "pre-commit>=4.1.0",
     "pytest>=8.3.4",
     "pytest-asyncio>=0.25.3",
+    "pytest-cov>=7.1.0",
     "ruff>=0.9.9",
 ]
 
@@ -54,6 +56,11 @@ known-first-party = ["app"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+addopts = "--cov=app --cov-report=term-missing --cov-report=xml --cov-report=html:htmlcov"
+
+[tool.coverage.run]
+source = ["app"]
+concurrency = ["greenlet", "thread"]
 
 [tool.mypy]
 python_version = "3.12"

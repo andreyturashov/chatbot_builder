@@ -32,6 +32,17 @@ run-api: ## Run the Main API service locally with auto-reload (port 8000)
 	@cd $(API_DIR) && uv run uvicorn app.main:app --reload --port 8000
 
 # ------------------------------------------------------------------------------
+# Database Migrations (Alembic)
+# ------------------------------------------------------------------------------
+migrate: ## Run pending database migrations
+	@echo "==> Running database migrations..."
+	@cd $(API_DIR) && uv run alembic upgrade head
+
+migrate-create: ## Create new migration (e.g. make migrate-create msg="add_table")
+	@echo "==> Creating database migration..."
+	@cd $(API_DIR) && uv run alembic revision --autogenerate -m "$(msg)"
+
+# ------------------------------------------------------------------------------
 # Testing & Quality Assurance
 # ------------------------------------------------------------------------------
 test-api: ## Run unit tests for services/api
@@ -39,6 +50,12 @@ test-api: ## Run unit tests for services/api
 	@cd $(API_DIR) && uv run pytest
 
 test: test-api ## Run all tests across all services
+
+coverage: ## Run tests and open visual HTML coverage report in browser
+	@echo "==> Running tests with HTML coverage report..."
+	@cd $(API_DIR) && uv run pytest --cov-report=html:htmlcov
+	@echo "==> Opening coverage report in browser..."
+	@open $(API_DIR)/htmlcov/index.html || true
 
 lint: ## Run Ruff linter on all services
 	@echo "==> Checking code style with Ruff..."
