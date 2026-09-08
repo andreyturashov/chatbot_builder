@@ -1,0 +1,36 @@
+services:
+  api-db:
+    image: pgvector/pgvector:pg16
+    container_name: chatbot-api-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-api}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-api}
+      POSTGRES_DB: ${POSTGRES_DB:-api_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - api_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-api} -d ${POSTGRES_DB:-api_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: chatbot-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  api_db_data:
+  redis_data:
