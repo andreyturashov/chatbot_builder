@@ -51,6 +51,12 @@ test-api: ## Run unit tests for services/api
 
 test: test-api ## Run all tests across all services
 
+coverage: ## Run tests and open visual HTML coverage report in browser
+	@echo "==> Running tests with HTML coverage report..."
+	@cd $(API_DIR) && uv run pytest --cov-report=html:htmlcov
+	@echo "==> Opening coverage report in browser..."
+	@open $(API_DIR)/htmlcov/index.html || true
+
 lint: ## Run Ruff linter on all services
 	@echo "==> Checking code style with Ruff..."
 	@cd $(API_DIR) && uv run ruff check .

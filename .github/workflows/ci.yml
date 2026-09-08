@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: ["main"]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   test-api:
     name: Test API & Coverage
@@ -39,6 +43,7 @@ jobs:
       - name: Run unit tests with coverage
         run: |
           uv run pytest --cov=app --cov-report=xml --cov-report=term-missing
+          uv run coverage json -o coverage.json
 
       - name: Upload coverage report to Codecov
         uses: codecov/codecov-action@v5
@@ -50,10 +55,15 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: ${{ github.repository }}
 
-      - name: Add Coverage Summary to GitHub Step Summary
+      - name: Generate Visual Coverage Summary
         if: always()
         run: |
-          echo "### 📊 Test & Coverage Summary" >> $GITHUB_STEP_SUMMARY
-          echo '```text' >> $GITHUB_STEP_SUMMARY
-          uv run coverage report >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          python ../../scripts/generate_coverage_markdown.py coverage.json > coverage_summary.md
+          cat coverage_summary.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment PR with Visual Coverage Report
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: api-coverage-report
+          path: services/api/coverage_summary.md
