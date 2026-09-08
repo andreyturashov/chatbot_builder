@@ -1,0 +1,59 @@
+name: CI & Coverage
+
+on:
+  push:
+    branches: ["main", "feat/**", "feature/**"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test-api:
+    name: Test API & Coverage
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: services/api
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "services/api/uv.lock"
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Check code style with Ruff
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      - name: Run unit tests with coverage
+        run: |
+          uv run pytest --cov=app --cov-report=xml --cov-report=term-missing
+
+      - name: Upload coverage report to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: services/api/coverage.xml
+          flags: api-service
+          name: api-codecov
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: ${{ github.repository }}
+
+      - name: Add Coverage Summary to GitHub Step Summary
+        if: always()
+        run: |
+          echo "### 📊 Test & Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          echo '```text' >> $GITHUB_STEP_SUMMARY
+          uv run coverage report >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

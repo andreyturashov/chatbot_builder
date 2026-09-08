@@ -2,6 +2,7 @@ import uuid
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @pytest.mark.asyncio
@@ -139,3 +140,25 @@ async def test_delete_bot_not_found(async_client: AsyncClient) -> None:
     random_id = str(uuid.uuid4())
     del_res = await async_client.delete(f"/api/v1/bots/{random_id}")
     assert del_res.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_bot_service_with_user_id(db_session: AsyncSession) -> None:
+    from app.schemas.bot import BotCreate
+    from app.services.bot_service import BotService
+
+    user_id = uuid.uuid4()
+    bot_in = BotCreate(name="User Owned Bot", description="Test description")
+    bot = await BotService.create(db=db_session, bot_in=bot_in, user_id=user_id)
+    assert bot.user_id == user_id
+
+    # Filter by user_id
+    items, total = await BotService.get_multi(db=db_session, user_id=user_id)
+    assert total == 1
+    assert len(items) == 1
+    assert items[0].id == bot.id
+
+    # Filter by non-existent user_id
+    empty_items, empty_total = await BotService.get_multi(db=db_session, user_id=uuid.uuid4())
+    assert empty_total == 0
+    assert len(empty_items) == 0
