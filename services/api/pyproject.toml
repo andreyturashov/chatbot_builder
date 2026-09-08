@@ -11,6 +11,7 @@ dependencies = [
     "pgvector>=0.3.6",
     "pydantic>=2.10.6",
     "pydantic-settings>=2.7.1",
+    "sqladmin>=0.31.1",
     "sqlalchemy[asyncio]>=2.0.38",
     "uvicorn[standard]>=0.34.0",
 ]
@@ -55,6 +56,7 @@ known-first-party = ["app"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
 testpaths = ["tests"]
 addopts = "--cov=app --cov-report=term-missing --cov-report=xml --cov-report=html:htmlcov"
 

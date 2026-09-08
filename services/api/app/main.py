@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.admin.setup import setup_admin
 from app.api.v1.router import api_v1_router
 from app.core.config import settings
 from app.db.session import engine
@@ -46,6 +47,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Setup SQLAdmin dashboard
+admin = setup_admin(app, engine)
+
 # Include API v1 router
 app.include_router(api_v1_router, prefix=settings.API_V1_STR)
 
@@ -56,4 +60,5 @@ async def root() -> dict[str, str]:
         "service": settings.APP_NAME,
         "environment": settings.APP_ENV,
         "docs": f"{settings.API_V1_STR}/docs" if settings.DEBUG else "disabled",
+        "admin": "/admin" if settings.ADMIN_ENABLED else "disabled",
     }

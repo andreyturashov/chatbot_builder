@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.pool import StaticPool
 
 from app.db.session import get_db
-from app.main import app
+from app.main import admin, app
 from app.models import Base
 
 # In-memory SQLite async test database
@@ -28,10 +28,22 @@ TestingSessionLocal = async_sessionmaker(
     expire_on_commit=False,
 )
 
+if admin is not None:
+    admin.engine = test_engine
+    admin.session_maker = TestingSessionLocal
+    for v in admin.views:
+        v.session_maker = TestingSessionLocal
+
 
 @pytest.fixture(autouse=True)
 async def setup_db() -> AsyncGenerator[None, None]:
     """Create all tables before each test and drop them after."""
+    if admin is not None:
+        admin.engine = test_engine
+        admin.session_maker = TestingSessionLocal
+        for v in admin.views:
+            v.session_maker = TestingSessionLocal
+
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
